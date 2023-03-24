@@ -41,30 +41,19 @@ namespace Minefiled
                     if (num < fatorDePropabilidade)
                     {
                         cell.hasBomb = true;
-                    }
-                    if (cell.hasBomb == true)
-                    {
+
                         openCells += 1;
 
-                        int lineMin = Math.Clamp(i - 1, 0, cells.GetLength(0) - 1);
-                        int lineMax = Math.Clamp(i + 1, 0, cells.GetLength(0) - 1);
-
-                        int columnMin = Math.Clamp(j - 1, 0, cells.GetLength(1) - 1);
-                        int columnMax = Math.Clamp(j + 1, 0, cells.GetLength(1) - 1);
-
-                        for (int k = lineMin; k <= lineMax; k++)
+                        var nearbyCells = GetNearbyCells(cell);
+                        for (int k = 0; k < nearbyCells.Length; k++)
                         {
-                            for (int m = columnMin; m <= columnMax; m++)
-                            {
-                                Cell tempCell = cells[k, m];
+                            Cell tempCell = nearbyCells[k];
 
-                                if (tempCell.hasBomb == false)
-                                {
-                                    tempCell.bombsNear += 1;
-                                }
+                            if (tempCell.hasBomb == false)
+                            {
+                                tempCell.bombsNear += 1;
                             }
                         }
-
                     }
                 }
             }
@@ -79,20 +68,11 @@ namespace Minefiled
 
         public int GetDifficultyFactor(int difficulty)
         {
-            Random randomNum = new Random();
-            Cell cell = new Cell();
-
             switch (difficulty)
             {
-                case 1:
-                    return 10;
-
-                case 2:
-                    return 30;
-
-                case 3:
-                    return 40;
-
+                case 1: return 10;
+                case 2: return 30;
+                case 3: return 40;
             }
 
             return 30;
@@ -100,39 +80,78 @@ namespace Minefiled
 
         public void SetCellAsVisible(int line, int column)
         {
-            Queue <Cell> cellsToBeVisible = new Queue <Cell>();
+            Queue<Cell> cellsToBeVisible = new Queue<Cell>();
 
-            cellsToBeVisible.Enqueue(cells[line,column]);
+            cellsToBeVisible.Enqueue(cells[line, column]);
 
             while (cellsToBeVisible.Count > 0)
             {
                 var spreedCell = cellsToBeVisible.Dequeue();
+
                 spreedCell.isVisible = true;
+                if (spreedCell.bombsNear != 0) continue;
 
-                int lineMin = Math.Clamp(line - 1, 0, cells.GetLength(0) - 1);
-                int lineMax = Math.Clamp(line + 1, 0, cells.GetLength(0) - 1);
+                var nearbyCells = GetNearbyCells(spreedCell);
 
-                int columnMin = Math.Clamp(column - 1, 0, cells.GetLength(1) - 1);
-                int columnMax = Math.Clamp(column + 1, 0, cells.GetLength(1) - 1);
-
-                for (int k = lineMin; k <= lineMax; k++)
+                for (int i = 0; i < nearbyCells.Length; i++)
                 {
-                    for (int m = columnMin; m <= columnMax; m++)
+                    var cell = nearbyCells[i];
+                    if (cell.isVisible) continue;
+
+                    var alreadyInQueue = cellsToBeVisible.Any(c => c == cell);
+                    if (alreadyInQueue == true) continue;
+
+                    cellsToBeVisible.Enqueue(cell);
+                }
+            }
+        }
+
+        public Cell[] GetNearbyCells(Cell cell)
+        {
+            var cellPosition = GetCellPosition(cell);
+            if (!cellPosition.HasValue)
+            {
+                return Array.Empty<Cell>();
+            }
+
+            var line = cellPosition.Value.x;
+            var column = cellPosition.Value.y;
+
+            var list = new List<Cell>();
+
+            int lineMin = Math.Clamp(line - 1, 0, cells.GetLength(0) - 1);
+            int lineMax = Math.Clamp(line + 1, 0, cells.GetLength(0) - 1);
+
+            int columnMin = Math.Clamp(column - 1, 0, cells.GetLength(1) - 1);
+            int columnMax = Math.Clamp(column + 1, 0, cells.GetLength(1) - 1);
+
+            for (int i = lineMin; i <= lineMax; i++)
+            {
+                for (int j = columnMin; j <= columnMax; j++)
+                {
+                    if (i == line && j == column) continue;
+
+                    list.Add(cells[i, j]);
+                }
+            }
+
+            return list.ToArray();
+        }
+
+        public (int x, int y)? GetCellPosition(Cell cell)
+        {
+            for (int i = 0; i < cells.GetLength(0); i++)
+            {
+                for (int j = 0; j < cells.GetLength(1); j++)
+                {
+                    if (cells[i, j] == cell)
                     {
-                        Cell tempCell = cells[k, m];
-
-                        if (tempCell == cells[line, column] || tempCell.isVisible)
-                        {
-                            continue;
-                        }
-
-                        if (tempCell.hasBomb == false)
-                        {
-                            cellsToBeVisible.Enqueue(tempCell);
-                        }
+                        return (i, j);
                     }
                 }
             }
+
+            return null;
         }
     }
 }
