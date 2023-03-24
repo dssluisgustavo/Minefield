@@ -39,7 +39,7 @@ internal class Program
 
         Console.WriteLine("Digite a quantidade de linhas do Campo Minado: ");
         int line = Convert.ToInt32(Console.ReadLine());
-
+        
         Console.WriteLine("Digite a quantidade de colunas do Campo Minado: ");
         int column = Convert.ToInt32(Console.ReadLine());
 
@@ -81,12 +81,12 @@ internal class Program
 
             }
 
-            mapSize.cells[coordenateLine, coordenateColumn].isVisible = true;
+            //mapSize.cells[coordenateLine, coordenateColumn].isVisible = true;
 
-            /*if (mapSize.cells[coordenateLine, coordenateColumn].isVisible == false)
+            if (mapSize.cells[coordenateLine, coordenateColumn].isVisible == false)
             {
-                //mapSize.SetCellAsVisible(coordenateLine,coordenateColumn);
-            }*/
+                mapSize.SetCellAsVisible(coordenateLine,coordenateColumn);
+            }
 
             if (mapSize.HasBomb(coordenateLine, coordenateColumn) == false)
             {
