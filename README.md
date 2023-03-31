@@ -1,2 +1,2 @@
 # Minefield
-Game: Campo Minado
+Game Console: Campo Minado
